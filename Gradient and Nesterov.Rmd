@@ -1,0 +1,93 @@
+---
+title: "HW4"
+author: "Zhengyu Ren"
+date: "3/18/2018"
+output:
+  html_document: default
+  word_document: default
+---
+#b
+```{r}
+# Rosenbrock Banana function.
+banana = function(x) {   
+  x1 = x[1]
+  x2 = x[2]
+  100*(x2 - x1^2 )^2 + (1 - x1)^2
+}
+
+# Gradient of the banana function.
+gradient_banana = function(x) {
+  x1 = x[1]
+  x2 = x[2]
+  c(-400 * x1 * (x2 - x1^2) - 2 * (1 - x1), 200 * (x2 - x1^2 ))
+}
+
+gradient_descent <- function(f, gradf, startx, alpha) {
+  epsilon = 10^-4
+  max_iter = 10^4
+  iter <- 0
+  xs <- c(1,1)
+  x <- startx
+  error <- c()
+  
+  while(norm(gradf(x),type = "2") > epsilon & iter < max_iter) {
+    iter <- iter + 1
+    gf <- gradf(x)
+    d <- gf/norm(gf,type = "2")
+    x <- x - alpha*d
+    error[iter] <-norm(x-xs,type = "2")
+  }
+  
+  return (list(x=x, iter=iter, gf=gf, error=error))
+}
+
+a1 <- gradient_descent(banana, gradient_banana, c(0,0),0.001)
+a2 <- gradient_descent(banana, gradient_banana, c(0,0),0.05)
+a3 <- gradient_descent(banana, gradient_banana, c(0,0),0.5)
+plot(1:a1$iter, a1$error, main = "Gradient Descent", pch = ".", xlab = "iteration", ylab = "error")
+points(1:a2$iter, a2$error,col = 'red',pch=".")
+points(1:a3$iter, a3$error,col = 'blue',pch=".")
+legend(800,1.44,legend = c("0.001","0.05","0.5"),col = c("black","red","blue"),pch = c(".",".","."),lty = 1,cex = 0.5)
+```
+
+by the graph we could see that when our stepsize alpha=0.5 the algroithm did not perfrom well. When alpha = 0.05 we got better result and we got the minimum error when stepsize is 0.001 which is approaching zero.
+
+#c
+```{r}
+gradientdescentN <- function(f, gradf, startx,alpha) {
+  epsilon = 10^-4
+  max_iter = 10^3
+  iter <- 1
+  xs <- c(1,1)
+  x <- startx
+  y <- startx
+  sigma <- 1
+  error <- c()
+
+  while(norm(gradf(x), type = "2") > epsilon & iter < max_iter) {
+    iter <- iter + 1
+    gf <- gradf(y)
+    d <- gf/norm(gf,type = "2")
+    xnew <- y - alpha*d
+    sigmanew <- (1+sqrt(1+4*sigma^2))/2
+    ynew <- xnew +((sigma-1)/sigmanew)*(xnew-x)
+    error[iter] <- norm(x-xs, type = "2")
+    
+    x <-xnew
+    y <-ynew
+    sigma <-sigmanew
+  }
+  
+  return (list(x=xnew, iter=iter, gf=gf, error=error))
+}
+
+a1 <- gradientdescentN(banana, gradient_banana, c(0,0),0.001)
+a2 <- gradientdescentN(banana, gradient_banana, c(0,0),0.05)
+a3 <- gradientdescentN(banana, gradient_banana, c(0,0),0.5)
+plot(1:a1$iter, a1$error, main = "Nesterov method", pch=".", xlab = "iteration", ylab = "error")
+points(1:a2$iter, a2$error,col = 'red',pch=".")
+points(1:a3$iter, a3$error,col = 'blue',pch=".")
+legend(800,1,legend = c("0.001","0.05","0.5"),col = c("black","red","blue"),pch = c(".",".","."),lty = 1,cex = 0.5)
+```
+
+similar to gradient descent, when we have alpha = 0.5 we are able to see it converges to the solution. When alpha = 0.001 it seems converging to our solution. Also, for nesterov's method, if we compare it to the gradient descent method we could also see it convergence faster than the gradient descent method when we have same stepsize.
